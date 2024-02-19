@@ -57,7 +57,6 @@ public class NotificationManager extends AbstractGui {
             // fix this, if I can ever be bothered
             //drawRoundedRect(x - NOTIFICATION_MARGIN, y - height - NOTIFICATION_MARGIN, width + 2 * NOTIFICATION_MARGIN, height + 2 * NOTIFICATION_MARGIN, 10, color);
 
-            fill(matrixStack, x, y - height - NOTIFICATION_MARGIN, x + width, y + NOTIFICATION_MARGIN, color);
             int textY = (y - height / 2) - 5; // 5 to slightly set the text higher
             Minecraft.getInstance().font.drawShadow(matrixStack, notification.getTitle(), x, textY, notification.getTitleColor());
             Minecraft.getInstance().font.drawShadow(matrixStack, notification.getSubtitle(), x, textY + height, notification.getSubtitleColor());
