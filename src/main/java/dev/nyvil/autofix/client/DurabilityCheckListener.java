@@ -59,29 +59,36 @@ public class DurabilityCheckListener {
     @SubscribeEvent
     public void onContainerOpen(GuiScreenEvent.InitGuiEvent.Post event) {
         if (event.getGui() instanceof ContainerScreen && event.getGui().getTitle().getString().equals("Confirm Repair All")) {
-            handleInventory();
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(this::handleInventory, 100, TimeUnit.MILLISECONDS); // small delay to allow the inventory to load
+            System.out.println("repair screen opened!");
+        } else {
+            System.out.println("Not the right screen: " + event.getGui().getTitle().getString());
         }
     }
 
     private void handleInventory() {
+        System.out.println("Called handleInventory()");
         ContainerScreen<?> gui = (ContainerScreen<?>) Minecraft.getInstance().screen;
-        if (gui == null) {
-            return;
-        }
-        Slot slot = gui.getMenu().slots.get(20);
 
-        if (slot.hasItem() && slot.getItem().getItem() == Items.LIME_STAINED_GLASS_PANE) {
-            CClickWindowPacket packet = new CClickWindowPacket(gui.getMenu().containerId, slot.index, 0, ClickType.PICKUP, slot.getItem(), (short) 0);
+        assert gui != null;
+        for (Slot slot : gui.getMenu().slots) {
+            if (slot.hasItem() && slot.getItem().getItem() == Items.LIME_STAINED_GLASS_PANE) {
+                System.out.println("slot is lime stained glass");
+                CClickWindowPacket packet = new CClickWindowPacket(gui.getMenu().containerId, slot.index, 0, ClickType.PICKUP, slot.getItem(), (short) 0);
 
-            try {
-                Minecraft.getInstance().getConnection().send(packet);
-            } catch (Exception e) {
-                System.out.println("Failed to send click packet: " + e.getMessage());
+                try {
+                    Minecraft.getInstance().getConnection().send(packet);
+                    System.out.println("Sent click packet.");
+                } catch (Exception e) {
+                    System.out.println("Failed to send click packet: " + e.getMessage());
+                }
+
+                Minecraft.getInstance().gameMode.handleInventoryMouseClick(gui.getMenu().containerId, slot.index, 0, ClickType.PICKUP, Minecraft.getInstance().player);
+                System.out.println("Executed click on slot: " + slot.index);
             }
-
-            Minecraft.getInstance().gameMode.handleInventoryMouseClick(gui.getMenu().containerId, slot.index, 0, ClickType.PICKUP, Minecraft.getInstance().player);
-            System.out.println("Executed click on slot: " + slot.index);
         }
+
     }
 }
 
